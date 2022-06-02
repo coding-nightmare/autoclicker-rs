@@ -1,0 +1,49 @@
+[package]
+name = "autoclicker_rs"
+default-run = "autoclicker_rs_bin"
+version = "0.1.0"
+authors = ["Robin Barnes"]
+edition = "2021"
+rust-version = "1.56"
+include = ["src/**/*", "README.md"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "autoclicker_rs_bin"
+path = "src/main.rs"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+egui = "0.18.1"
+eframe = "0.18.0"
+serde = "1.0.137"
+rand = "0.8.5"
+inputbot = "0.5.1"
+epi = "0.17.0"
+
+[features]
+#default = ["persistence"]
+#persistence = ["eframe/persistence", "serde"] # Enable if you want to persist app state on shutdown
+
+[profile.release]
+opt-level = 3 # fast and small wasm
+
+[patch.crates-io]
+
+# If you want to use the bleeding edge version of `egui`:
+# eframe = { git = "https://github.com/emilk/egui", branch = "master" }
+
+# If you fork https://github.com/emilk/egui you can test with:
+# eframe = { path = "../egui/eframe" }
+
+[target.x86_64-pc-windows-gnu]
+linker = "/usr/bin/x86_64-w64-mingw32-gcc"
+console_error_panic_hook = "0.1.6"
+tracing-wasm = "0.2"
+
+[target.x86_64-unknown-linux-gnu]
+linker = "/usr/bin/clang"
+rustflags = ["-C", "link-arg=--ld-path=/usr/local/mold"]
