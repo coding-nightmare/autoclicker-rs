@@ -2,6 +2,7 @@ use inputbot::{KeybdKey::*, MouseButton::*, *};
 use std::sync::mpsc;
 use std::thread;
 use std::{thread::sleep, time::Duration};
+mod app;
 
 //#![forbid(unsafe_code)]
 //#![cfg_attr(not(debug_assertions), deny(warnings))] // Forbid warnings in release builds
@@ -12,33 +13,22 @@ use std::{thread::sleep, time::Duration};
 #[cfg(not(target_arch = "wasm32"))]
 
 fn main() {
-    let (tx, rx) = mpsc::channel::<u64>();
+    let (sender, receiver) = mpsc::channel::<app::AppState>();
 
     thread::spawn(move || {
-        F9Key.bind(|| {
-            while F9Key.is_pressed() {
-                LeftButton.press();
-                LeftButton.release();
-                sleep(Duration::from_millis(50));
-            }
-        });
-        handle_input_events();
     });
 
     eframe::run_native(
         "Autoclicker-rs",
         eframe::NativeOptions::default(),
         Box::new(|cc| {
-            let (sender, receiver) = mpsc::channel::<i32>();
-
-            let app = autoclicker_rs::AutoClickerApp {
-                state: autoclicker_rs::AppState::default(),
-                sender: tx,
+            
+            let app = app::AutoClickerApp {
+                state: app::AppState::default(),
+                sender: sender,
             };
 
             Box::new(app)
         }),
     );
-
-
 }
