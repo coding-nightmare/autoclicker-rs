@@ -1,9 +1,9 @@
 use eframe;
-use serde::{Deserialize, Serialize};
+//use serde::{Deserialize, Serialize};
 use std::sync::mpsc;
 
 //#[derive(Serialize, Deserialize)]//#[cfg_attr(feature = "persistence", serde(tag = "type"))] // if we add new fields, give them default values when deserializing old state
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 enum RadioButtonEnum {
     Left,
     Middle,
@@ -11,7 +11,7 @@ enum RadioButtonEnum {
 }
 
 //#[derive(Serialize, Deserialize)]//#[cfg_attr(feature = "persistence", serde(tag = "type"))] // if we add new fields, give them default values when deserializing old state
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 enum Mode {
     Toggle,
     Trigger,
@@ -19,11 +19,12 @@ enum Mode {
 
 pub struct AutoClickerApp {
     pub state: AppState,
-    pub sender: mpsc::Sender<u64>,
+    pub sender: mpsc::Sender<AppState>,
 }
 
 //#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "persistence", serde(tag = "type"))] // if we add new fields, give them default values when deserializing old state
+#[derive(Clone, Copy)]
 pub struct AppState {
     delay: u64,
     button: RadioButtonEnum,
@@ -42,14 +43,14 @@ impl Default for AppState {
     }
 }
 
-impl AutoClickerApp {
-    pub fn makeapp(sender: mpsc::Sender<u64>) -> Self {
+/*impl AutoClickerApp {
+    pub fn makeapp(sender: mpsc::Sender<AppState>) -> Self {
         Self {
             state: AppState::default(),
             sender,
         }
     }
-}
+}*/
 
 impl eframe::App for AutoClickerApp {
     /// Called once before the first frame.
@@ -67,6 +68,7 @@ impl eframe::App for AutoClickerApp {
         epi::set_value(storage, epi::APP_KEY, self);
     }*/
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        #[allow(unused_variables)]
         let Self { state, sender } = self;
         let AppState {
             delay,
@@ -120,5 +122,7 @@ impl eframe::App for AutoClickerApp {
                 });
             });
         });
+        
+        _ = sender.send(*state);
     }
 }
