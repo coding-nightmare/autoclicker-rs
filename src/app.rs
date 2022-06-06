@@ -122,7 +122,7 @@ impl eframe::App for AutoClickerApp {
                 });
             });
         });
-        
-        _ = sender.send(*state);
+
+        sender.send(*state).unwrap();
     }
 }
