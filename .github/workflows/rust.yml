@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Download artifacts
-      uses: action/download-artifact@v3
+      uses: actions/download-artifact@v3
       with:
         name: build-artifact
         path: /home/runner/work/autoclicker-rs/autoclicker-rs/target/github-artifacts
