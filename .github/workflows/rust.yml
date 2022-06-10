@@ -15,11 +15,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Download artifacts
+      uses: action/download-artifact@v3
+      with:
+        name: build-artifact
+        path: /home/runner/work/autoclicker-rs/autoclicker-rs/target/github-artifacts
+      
     - name: Install dependencies
       run: sudo apt install libx11-dev libxtst-dev libudev-dev libinput-dev
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose --release --target target/github-artifacts
     - name: Run tests
       run: cargo test --verbose
+    - name: Uploading artifacts
+      uses: actions/upload-artifacts@v3
+      with:
+        name: build-artifact
+        path: /home/runner/work/autoclicker-rs/autoclicker-rs/target/github-artifacts
       
