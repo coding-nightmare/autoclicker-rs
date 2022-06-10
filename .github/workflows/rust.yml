@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: build-artifact
-        path: /home/runner/work/autoclicker-rs/autoclicker-rs/target/debug
+#    - name: Download artifacts
+#      uses: actions/download-artifact@v3
+#      with:
+#        name: build-artifact
+#        path: /home/runner/work/autoclicker-rs/autoclicker-rs/target/debug
       
     - name: Install dependencies
       run: sudo apt install libx11-dev libxtst-dev libudev-dev libinput-dev
