@@ -16,12 +16,13 @@ fn main() {
     let (sender, receiver) = mpsc::channel::<app::AppState>();
 
     thread::spawn(move || {
+        receiver.recv()
     });
 
     eframe::run_native(
         "Autoclicker-rs",
         eframe::NativeOptions::default(),
-        Box::new(|cc| {
+        Box::new(|_cc| {
             
             let app = app::AutoClickerApp {
                 state: app::AppState::default(),

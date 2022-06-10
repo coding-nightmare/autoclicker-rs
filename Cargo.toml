@@ -19,6 +19,9 @@ rand = "0.8.5"
 inputbot = "0.5.1"
 epi = "0.17.0"
 
+[build-dependencies]
+cmake = "0.1"
+
 [features]
 #default = ["persistence"]
 #persistence = ["eframe/persistence", "serde"] # Enable if you want to persist app state on shutdown
