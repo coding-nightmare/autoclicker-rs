@@ -16,7 +16,7 @@ egui = "0.18.1"
 eframe = "0.18.0"
 serde = "1.0.137"
 rand = "0.8.5"
-inputbot = "0.5.1"
+inputbot = { git = "https://github.com/obv-mikhail/InputBot", branch = "develop" }
 epi = "0.17.0"
 
 [build-dependencies]
