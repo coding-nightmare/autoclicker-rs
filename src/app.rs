@@ -1,16 +1,38 @@
-use inputbot::{KeybdKey, MouseButton, };
 use eframe;
+use inputbot::{KeybdKey, MouseButton};
 //use serde::{Deserialize, Serialize};
 use std::sync::mpsc;
 
-
 //#[derive(Serialize, Deserialize)]//#[cfg_attr(feature = "persistence", serde(tag = "type"))] // if we add new fields, give them default values when deserializing old state
-#[derive(PartialEq, Clone, Copy)]
-#[derive(Debug)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum Mode {
     Toggle,
     Trigger,
 }
+
+#[derive(PartialEq, Clone, Copy, Debug)]
+
+pub enum  Trigger {
+    KeybdKey(KeybdKey),
+    MouseButton(MouseButton),
+}
+
+impl Trigger {
+    pub fn bind<F: Fn() + Send + Sync + 'static>(self, callback: F) {
+        match self {
+            Trigger::KeybdKey(key) => key.bind(callback),
+            Trigger::MouseButton(button) => button.bind(callback),
+        }
+    }
+    
+    pub fn is_pressed(self) -> bool {
+        match self {
+            Trigger::KeybdKey(key) => return key.is_pressed(),
+            Trigger::MouseButton(button) => return button.is_pressed(),
+        }
+    }
+}
+
 
 pub struct AutoClickerApp {
     pub state: AppState,
@@ -19,14 +41,14 @@ pub struct AutoClickerApp {
 
 //#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "persistence", serde(tag = "type"))] // if we add new fields, give them default values when deserializing old state
-#[derive(Clone, Copy)]
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct AppState {
     pub delay: u64,
     pub button: MouseButton,
-    pub trigger: KeybdKey, 
+    pub trigger: Trigger,
     pub mode: Mode,
     pub random: bool,
+    pub clicks: u64,
 }
 
 impl Default for AppState {
@@ -34,9 +56,10 @@ impl Default for AppState {
         Self {
             delay: 100,
             button: MouseButton::LeftButton,
-            trigger: KeybdKey::F12Key,
-            mode: Mode::Trigger,
+            trigger: Trigger::KeybdKey(KeybdKey::F10Key),
+            mode: Mode::Toggle,
             random: false,
+            clicks: 100,
         }
     }
 }
@@ -71,9 +94,10 @@ impl eframe::App for AutoClickerApp {
         let AppState {
             delay,
             button,
-            trigger,
             mode,
+            trigger,
             random,
+            clicks,
         } = state;
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -86,10 +110,12 @@ impl eframe::App for AutoClickerApp {
                 });
 
                 ui.horizontal_wrapped(|ui| {
-                    ui.radio_value(mode, Mode::Toggle, "Toggle");
                     ui.radio_value(mode, Mode::Trigger, "Trigger");
+                    ui.radio_value(mode, Mode::Toggle, "Toggle");
+                    egui::CollapsingHeader::new("").show(ui, |ui| {
+                        ui.add(egui::Slider::new(clicks, 0..=1000000).text("Total Times to click"));
+                    });
                 });
-
 
                 ui.horizontal_wrapped(|ui| {
                     //if ui.button("Select Button").clicked()  {
@@ -98,24 +124,29 @@ impl eframe::App for AutoClickerApp {
                     //        *trigger = event;
                     //    });
                     //};
-                    egui::CollapsingHeader::new("Some Of The Possible Buttons").show(ui, |ui| {
+                    egui::CollapsingHeader::new("Keybinds").show(ui, |ui| {
                         ui.horizontal_wrapped(|ui| {
-                            ui.radio_value(trigger, KeybdKey::F12Key, "F12");
-                            ui.radio_value(trigger, KeybdKey::F11Key, "F11");
-                            ui.radio_value(trigger, KeybdKey::F10Key, "F10");
-                            ui.radio_value(trigger, KeybdKey::F9Key, "F9");
-                            ui.radio_value(trigger, KeybdKey::F8Key, "F8");
-                            ui.radio_value(trigger, KeybdKey::F7Key, "F7");
-                            ui.radio_value(trigger, KeybdKey::F6Key, "F6");
-                            ui.radio_value(trigger, KeybdKey::F5Key, "F5");
-                            ui.radio_value(trigger, KeybdKey::F4Key, "F4");
-                            ui.radio_value(trigger, KeybdKey::F3Key, "F3");
-                            ui.radio_value(trigger, KeybdKey::F2Key, "F2");
-                            ui.radio_value(trigger, KeybdKey::F1Key, "F1");
-                            ui.radio_value(trigger, KeybdKey::NumLockKey, "Numlock");                        });
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F12Key), "F12");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F11Key), "F11");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F10Key), "F10");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F9Key), "F9");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F8Key), "F8");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F7Key), "F7");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F6Key), "F6");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F5Key), "F5");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F4Key), "F4");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F3Key), "F3");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F2Key), "F2");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::F1Key), "F1");
+                            ui.radio_value(trigger, Trigger::KeybdKey(KeybdKey::NumLockKey), "Numlock");
+                            ui.radio_value(trigger, Trigger::MouseButton(MouseButton::LeftButton), "Left");
+                            ui.radio_value(trigger, Trigger::MouseButton(MouseButton::RightButton), "Right");
+                            ui.radio_value(trigger, Trigger::MouseButton(MouseButton::MiddleButton), "Middle");
+                            ui.radio_value(trigger, Trigger::MouseButton(MouseButton::X1Button), "MouseX1");
+                            ui.radio_value(trigger, Trigger::MouseButton(MouseButton::X2Button), "MouseX2");
+                        });
                     });
                 });
-
 
                 ui.add(egui::Slider::new(delay, 0..=1000).text("delay"));
                 if ui.button("Increment").clicked() {

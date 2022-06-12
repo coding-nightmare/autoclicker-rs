@@ -8,25 +8,40 @@ fn main() {
 
     thread::spawn(move || loop {
         let state = receiver.recv().unwrap();
-        state.trigger.bind(move || {
-            if state.mode == app::Mode::Toggle {
-                while state.trigger.is_toggled() {
-                    state.button.press();
-                    state.button.release();
-                    thread::sleep(Duration::from_millis(state.delay));
-                    if state.random == true {
-                        thread::sleep(Duration::from_millis(rand::random()))
-                    }
+        let mut trigger = state.trigger;
+
+
+
+        trigger.bind(move || {
+            fn sleep(state: app::AppState) {
+                thread::sleep(Duration::from_millis(state.delay));
+                if state.random == true {
+                    thread::sleep(Duration::from_millis(rand::random()))
                 }
             }
-            if state.mode == app::Mode::Trigger {
-                while state.trigger.is_pressed() {
-                    state.button.press();
-                    state.button.release();
-                    thread::sleep(Duration::from_millis(state.delay));
-                    if state.random == true {
-                        thread::sleep(Duration::from_millis(rand::random()))
+
+            fn click(state: app::AppState) {
+                state.button.press();
+                state.button.release();
+                sleep(state)
+            }
+
+            if state.mode == app::Mode::Toggle {
+                if trigger.is_pressed() {
+                    thread::sleep(Duration::from_millis(100));
+                    loop {
+                        state.button.press();
+                        state.button.release();
+                        if trigger.is_pressed() {
+                            break
+                        }
                     }
+                };
+            }
+
+            if state.mode == app::Mode::Trigger {
+                while trigger.is_pressed() {
+                    click(state);
                 }
             }
         });
