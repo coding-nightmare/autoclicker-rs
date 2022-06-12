@@ -8,9 +8,7 @@ fn main() {
 
     thread::spawn(move || loop {
         let state = receiver.recv().unwrap();
-        let mut trigger = state.trigger;
-
-
+        let trigger = state.trigger;
 
         trigger.bind(move || {
             fn sleep(state: app::AppState) {
@@ -27,16 +25,22 @@ fn main() {
             }
 
             if state.mode == app::Mode::Toggle {
-                if trigger.is_pressed() {
-                    thread::sleep(Duration::from_millis(100));
-                    loop {
-                        state.button.press();
-                        state.button.release();
-                        if trigger.is_pressed() {
-                            break
-                        }
+                let mut enabled = false;
+                loop{
+                    if trigger.is_pressed() {
+                        enabled = !enabled;};
+                    if trigger.is_pressed() {
+                        enabled = !enabled;};
+                    if trigger.is_pressed() {
+                        enabled = !enabled;};
+                    if trigger.is_pressed() {
+                        enabled = !enabled;};
+                    if trigger.is_pressed() {
+                        enabled = !enabled;};
+                    if enabled == true {
+                        click(state);
                     }
-                };
+                }
             }
 
             if state.mode == app::Mode::Trigger {

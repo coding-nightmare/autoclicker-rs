@@ -48,7 +48,6 @@ pub struct AppState {
     pub trigger: Trigger,
     pub mode: Mode,
     pub random: bool,
-    pub clicks: u64,
 }
 
 impl Default for AppState {
@@ -57,9 +56,8 @@ impl Default for AppState {
             delay: 100,
             button: MouseButton::LeftButton,
             trigger: Trigger::KeybdKey(KeybdKey::F10Key),
-            mode: Mode::Toggle,
+            mode: Mode::Trigger,
             random: false,
-            clicks: 100,
         }
     }
 }
@@ -97,7 +95,6 @@ impl eframe::App for AutoClickerApp {
             mode,
             trigger,
             random,
-            clicks,
         } = state;
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -112,9 +109,6 @@ impl eframe::App for AutoClickerApp {
                 ui.horizontal_wrapped(|ui| {
                     ui.radio_value(mode, Mode::Trigger, "Trigger");
                     ui.radio_value(mode, Mode::Toggle, "Toggle");
-                    egui::CollapsingHeader::new("").show(ui, |ui| {
-                        ui.add(egui::Slider::new(clicks, 0..=1000000).text("Total Times to click"));
-                    });
                 });
 
                 ui.horizontal_wrapped(|ui| {
@@ -148,7 +142,7 @@ impl eframe::App for AutoClickerApp {
                     });
                 });
 
-                ui.add(egui::Slider::new(delay, 0..=1000).text("delay"));
+                ui.add(egui::Slider::new(delay, 1..=10000).text("delay"));
                 if ui.button("Increment").clicked() {
                     *delay += 10;
                 }
